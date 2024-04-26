@@ -5,6 +5,15 @@ name: CI
 on:
   push:
     branches: [main]
+    paths:
+      - 'api/**'
+      - 'tests/**'
+      - 'main.py'
+      - 'config.py'
+      - 'Dockerfile.ci'
+      - 'docker-compose-ci.yml'
+      - 'vector_db_task.py'
+      
   pull_request:
     branches: [ "main" ]
 env:
