@@ -40,6 +40,10 @@ Other parameters is configured for running locally so you don't need configure t
 In case that you want to use external service like S3 or external Qdrant database, 
 please refer to comments in `.env` file and configure those related parameter accordingly. 
 
+# Github Action 
+
+After testing and building the docker image, the image should be pushed to `ghcr.io/tanapholsu/tektome_rag`
+
 # Endpoints
 
 4 main endpoints are implemented for RAG system:
