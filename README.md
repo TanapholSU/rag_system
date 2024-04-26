@@ -8,7 +8,8 @@
     - service:  contains wrapper of external   LLM service and Object storage services
 
 - vector_db_task.py :  celery worker to process import data to vector database (received from OCR endpoint)
-
+- config.py : stores configuration loaded from env
+- main.py : fastapi app 
 - tests: integration and unit tests
 
 # Notes:
@@ -42,11 +43,11 @@ please refer to comments in `.env` file and configure those related parameter ac
 
 # Github Action 
 
-After testing and building the docker image, the image should be pushed to `ghcr.io/tanapholsu/tektome_rag`
+After testing and building the docker image, the image should be pushed to `ghcr.io/tanapholsu/tektome_rag` 
 
 # Endpoints
 
-4 main endpoints are implemented for RAG system:
+3 + 1 endpoints are implemented for RAG system:
 
 ## 1. /v1/upload (method: POST)
 
@@ -118,7 +119,8 @@ The request payload is OcrRequest object
 
 ### Json Response payload
 
-You should get the OcrResponse object with HTTP status 202.
+If the request file is sample files you should get the OcrResponse object with HTTP status 202.
+Otherwise, you would get  ObjectStorageFileNotFoundError error with Http statuc 400 
 
 #### OcrResponse
 
@@ -164,4 +166,13 @@ You should get the ExtractResponse object with HTTP status 200.
 | signed_url  | str                 | signed url of the target file
 | response    | str                 | chat response from llm service
 
+---
 
+Error json payload
+
+If the error originated from API itself, it should return json response with two fields as follows:
+
+| Attribute   | Type                   | Description                                                                          |
+|-------------|------------------------|--------------------------------------------------------------------------------------|
+| error_code       | str                 |  error code (basically the class name of the error  
+| detail  | str                 | error details
