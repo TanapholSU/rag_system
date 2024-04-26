@@ -57,7 +57,7 @@ services:
 
   tektome-celery-worker:
     image: tektome
-    container_name: tektome-celery
+    container_name: tektome-celery-worker
     build: 
       context: .
       dockerfile: Dockerfile
@@ -80,13 +80,16 @@ services:
     env_file:
       - .env
 
+    ports:
+      - "8000:8000"
+
     depends_on:
       - redis
       - qdrant
       - minio
       - tektome-celery-worker
       
-    command: uvicorn main:app
+    command: uvicorn main:app --host 0.0.0.0
 
 
 
