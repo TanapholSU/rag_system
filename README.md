@@ -35,8 +35,7 @@ Normally, if you want to run the test or deploy everything locally. Please follo
 Other parameters is configured for running locally so you don't need configure those.
 
 2. To run the test locally, simply run `docker compose -f docker-compose-local.yml run tektome-test --build`. 
-
-3. To deploy the rag system locally, please run `docker compose -f docker-compose-prod.yml up --build`.
+3. To deploy the rag system locally, please run run `docker compose -f docker-compose-local.yml down` to clean up the containers and then run `docker compose -f docker-compose-prod.yml up --build`.
 
 In case that you want to use external service like S3 or external Qdrant database, 
 please refer to comments in `.env` file and configure those related parameter accordingly. 
