@@ -25,7 +25,7 @@
 
 - Due to time constraints, not all error handling code are fully tested in automated test
 
-- Signed URL expiration date is fixed to 10 years. It can be changeable as config parameter in the future if need
+- Signed URL expiration date is fixed to 7 days. It can be changeable as config parameter in the future if need
 
 # Test & Deployment (locally)
 
