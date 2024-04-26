@@ -1,0 +1,77 @@
+version: '3'
+
+
+services:  
+  minio:
+    container_name: minio
+    image: minio/minio:latest
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    
+    restart: always      
+    environment:
+      MINIO_ROOT_USER: "root"
+      MINIO_ROOT_PASSWORD: "password"     
+
+       
+    command: server --console-address "0.0.0.0:9001" /data
+
+
+  createbuckets:
+    container_name: minio-init
+    image: minio/mc
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      /usr/bin/mc alias set myminio http://minio:9000 root password;
+      /usr/bin/mc mb myminio/tektome;
+      /usr/bin/mc admin user add myminio tektome tektomeSecret;
+      /usr/bin/mc admin policy attach myminio readwrite --user=tektome;
+      exit 0;
+      "
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: qdrant
+
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+      
+    restart: always      
+
+
+  redis:
+    image: redis:7.2
+    restart: always
+    ports:
+      - "6379:6379"
+
+
+  tektome-celery-worker:
+    image: tektome
+    container_name: tektome-celery
+    build: 
+      context: .
+      dockerfile: Dockerfile.ci
+    depends_on:
+      - redis
+      - qdrant
+      - minio
+      
+    command: python vector_db_task.py
+
+
+  tektome-test:
+    image: tektome
+    container_name: tektome
+    build: 
+      context: .
+      dockerfile: Dockerfile.ci
+
+    depends_on:
+      - tektome-celery-worker
+      
+    command: python -m pytest tests/ -vv -x

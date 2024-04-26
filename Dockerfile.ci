@@ -1,0 +1,12 @@
+FROM python:3.12.3-slim-bullseye
+
+COPY . /app/
+WORKDIR /app
+RUN --mount=type=secret,id=openai_api_key \
+    sed -i "s/OPENAI_API_KEY=/OPENAI_API_KEY=$(cat /run/secrets/openai_api_key)/g" /app/.env.ci
+
+
+RUN pip install -r requirements.txt 
+RUN rm -f /app/.env && mv /app/.env.ci /app/.env
+
+CMD ["python", "vector_db_task.py"]
