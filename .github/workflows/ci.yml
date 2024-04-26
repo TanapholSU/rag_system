@@ -11,44 +11,44 @@ env:
   OPENAI_API_KEY: ${{secrets.OPENAI_API_KEY}} 
   IMAGE_NAME: tektome_rag
 jobs:
-  # test:
-  #   runs-on: ubuntu-22.04
-  #   #runs-on: self-hosted
-  #   steps:
-  #     - uses: actions/checkout@v4
+  test:
+    runs-on: ubuntu-22.04
+    #runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v4
 
-  #     - uses: actions/setup-python@v5
-  #       with:
-  #         python-version: '3.12.2' 
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12.2' 
 
-  #     - name: install black linter + formatter
-  #       run: pip install black
+      - name: install black linter + formatter
+        run: pip install black
 
-  #     - name: Run lintter 
-  #       run: python -m black --check .
+      - name: Run lintter 
+        run: python -m black --check .
 
-  #     - name: Build the celery worker image with secret
-  #       uses: docker/build-push-action@v4
-  #       with:
-  #         context: .
-  #         file: Dockerfile.ci
-  #         platforms: linux/amd64
-  #         tags: tektome
-  #         secrets: |
-  #           "openai_api_key=${{ secrets.OPENAI_API_KEY }}"
+      - name: Build the celery worker image with secret
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: Dockerfile.ci
+          platforms: linux/amd64
+          tags: tektome
+          secrets: |
+            "openai_api_key=${{ secrets.OPENAI_API_KEY }}"
 
-  #     - name: Run services
-  #       run: docker compose -f docker-compose-ci.yml up minio createbuckets qdrant redis tektome-celery-worker -d 
+      - name: Run services
+        run: docker compose -f docker-compose-ci.yml up minio createbuckets qdrant redis tektome-celery-worker -d 
       
-  #     - name: Run pytest
-  #       run: docker compose -f docker-compose-ci.yml up tektome-test --exit-code-from tektome-test
+      - name: Run pytest
+        run: docker compose -f docker-compose-ci.yml up tektome-test --exit-code-from tektome-test
 
-  #     - name: Remove docker container after test
-  #       if: always()
-  #       run: docker compose -f docker-compose-ci.yml down
+      - name: Remove docker container after test
+        if: always()
+        run: docker compose -f docker-compose-ci.yml down
 
   build_and_publish_docker:
-    # needs: [test]
+    needs: [test]
     runs-on: ubuntu-22.04
     #runs-on: self-hosted
     permissions:
