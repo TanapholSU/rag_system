@@ -61,10 +61,7 @@ def test_ocr_endpoint_with_valid_sample_data():
 def test_ocr_endpoint_with_invalid_data():
     """
     Testing ocr endpoint when providing non-existing file.
-    Initially, the http status response from this endpoint should be 202 ACCEPT.
-    Also, the response payload should be OcrResponse with task id
-
-    After the task is processed, the result should become FAILURE with some error message
+    Initially, the http status response from this endpoint should be 400.
     """
     # upload files first
 
@@ -72,22 +69,4 @@ def test_ocr_endpoint_with_invalid_data():
         url="/v1/ocr", json={"signed_url": "http://localhost/test_invalid_file.jpg"}
     )
 
-    assert response.status_code == status.HTTP_202_ACCEPTED
-    result = response.json()
-    response = OcrResponse(**result)
-
-    task_id = response.task_id
-
-    while True:
-        time.sleep(5)
-        result = import_doc_to_vector_store.AsyncResult(task_id)
-        if result.status == "FAILURE":
-            break
-
-    # also check the get status endpoint here
-    response = client.get(url=f"/v1/ocr/{task_id}")
-
-    result = response.json()
-    response = OcrResponse(**result)
-    assert response.task_status == "FAILURE"
-    assert response.detail == "Could not find target file"
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
