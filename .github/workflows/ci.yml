@@ -9,7 +9,7 @@ on:
     branches: [ "main" ]
 env:
   OPENAI_API_KEY: ${{secrets.OPENAI_API_KEY}} 
-  IMAGE_NAME: tektome
+  IMAGE_NAME: tektome_rag
 jobs:
   # test:
   #   runs-on: ubuntu-22.04
