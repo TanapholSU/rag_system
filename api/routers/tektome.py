@@ -105,12 +105,23 @@ async def mock_ocr(request: OcrRequest, response: Response) -> OcrResponse:
         - OcrResponse which contains task id (of celery) and the current task status. Client can check the task status using GET method to /ocr/<task_id> endpoint
 
     Raises:
+        - ObjectStorageFileNotFoundError if requested file is not sample file
         - APIError if there is problem with the backend (celery)
+
     """
 
     try:
         url = request.signed_url
         logger.info(f"Got OCR request for url: {url}")
+
+        original_filename = get_filename_from_signed_url(url)
+
+        if (
+            "建築基準法施行令" not in original_filename
+            and "東京都建築安全条例" not in original_filename
+        ):
+            logger.error(f"The requested file: {original_filename} is not sample file")
+            raise ObjectStorageFileNotFoundError
 
         result = import_doc_to_vector_store.delay(url)
         response.status_code = status.HTTP_202_ACCEPTED
@@ -173,7 +184,7 @@ async def extract(request: ExtractRequest) -> ExtractResponse:
         if not object_storage_service.contains_file(filename):
             raise ObjectStorageFileNotFoundError
 
-        result = llm_service.query(query, filename)
+        result = llm_service.query(query, signed_url)
 
         return ExtractResponse(
             query=query, signed_url=signed_url, filename=filename, response=result

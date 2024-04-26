@@ -165,4 +165,4 @@ class Gpt35LLMService(LLMService):
             search_kwargs=dict(k=self.vector_search_top_k, filter=dict(source=filename))
         )
 
-        return retriever.invoke(query)
+        return retriever.get_relevant_documents(query)
