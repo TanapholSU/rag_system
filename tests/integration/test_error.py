@@ -1,14 +1,17 @@
-from fastapi.testclient import TestClient
-from fastapi import status
-import qdrant_client.http
-import qdrant_client.http.exceptions
-from main import app
-from config import app_config
-from api.service.storage.minio_storage import MinioStorage
 import openai
 import pytest
 import os
 import qdrant_client
+
+from fastapi.testclient import TestClient
+from fastapi import status
+from celery.exceptions import CeleryError
+import qdrant_client.http
+import qdrant_client.http.exceptions
+from main import app
+from config import app_config
+from vector_db_task import import_doc_to_vector_store
+from api.service.storage.minio_storage import MinioStorage
 from api.common.error import (
     LlmOpenAiAPIConnectionError,
     LlmOpenAiAPIConnectionError,
@@ -19,6 +22,7 @@ from api.common.error import (
     LlmOpenAiRateLimitError,
     LlmError,
     LlmVectorStoreError,
+    ObjectStorageError,
 )
 
 object_storage = MinioStorage(
@@ -38,7 +42,124 @@ def signed_url():
     return test_file_signed_url
 
 
-def test_llm_error(mocker, signed_url):
+def test_upload_with_object_storage_error(mocker):
+    # patch function called in query() to trigger error handling code
+    mocker.patch(
+        "api.service.storage.minio_storage.MinioStorage.upload",
+        side_effect=ObjectStorageError("some error"),
+    )
+
+    client = TestClient(app)
+
+    files = [
+        (
+            "files",
+            open(os.path.join("test_files", "sample", "建築基準法施行令.pdf"), "rb"),
+        )
+    ]
+    response = client.post(url="/v1/upload", files=files)
+
+    output = response.json()
+    assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+    assert output["error_code"] == "ObjectStorageError"
+    assert output["detail"] == "some error"
+
+
+def test_upload_with_unexpected_error(mocker):
+    # patch function called in query() to trigger error handling code
+    mocker.patch(
+        "api.service.storage.minio_storage.MinioStorage.upload",
+        side_effect=ValueError("value error"),
+    )
+
+    client = TestClient(app)
+
+    files = [
+        (
+            "files",
+            open(os.path.join("test_files", "sample", "建築基準法施行令.pdf"), "rb"),
+        )
+    ]
+    response = client.post(url="/v1/upload", files=files)
+
+    output = response.json()
+    assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+    assert output["error_code"] == "APIError"
+    assert output["detail"] == "Unknown error"
+
+
+def test_mock_ocr_with_unexpected_error(mocker):
+    # patch function called in query() to trigger error handling code
+    mocker.patch(
+        "vector_db_task.import_doc_to_vector_store.delay",
+        side_effect=ValueError("value error"),
+    )
+
+    client = TestClient(app)
+
+    response = client.post(
+        url="/v1/ocr", json={"signed_url": "http://localhost/建築基準法施行令.pdf"}
+    )
+
+    output = response.json()
+    assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+    assert output["error_code"] == "APIError"
+    assert output["detail"] == "Unknown error"
+
+
+def test_mock_ocr_with_celery_error(mocker):
+    # patch function called in query() to trigger error handling code
+    mocker.patch(
+        "vector_db_task.import_doc_to_vector_store.delay", side_effect=CeleryError()
+    )
+
+    client = TestClient(app)
+
+    response = client.post(
+        url="/v1/ocr", json={"signed_url": "http://localhost/建築基準法施行令.pdf"}
+    )
+
+    output = response.json()
+    assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+    assert output["error_code"] == "APIError"
+    assert output["detail"] == "There is problem with backend side (celery)"
+
+
+def test_get_ocr_status_with_celery_error(mocker):
+    # patch function called in query() to trigger error handling code
+    mocker.patch(
+        "vector_db_task.import_doc_to_vector_store.AsyncResult",
+        side_effect=CeleryError(),
+    )
+
+    client = TestClient(app)
+
+    response = client.get(url="/v1/ocr/123545")
+
+    output = response.json()
+    assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+    assert output["error_code"] == "APIError"
+    assert output["detail"] == "There is problem with backend side (celery)"
+
+
+def test_get_ocr_status_with_unexpected_error(mocker):
+    # patch function called in query() to trigger error handling code
+    mocker.patch(
+        "vector_db_task.import_doc_to_vector_store.AsyncResult",
+        side_effect=ValueError("value error"),
+    )
+
+    client = TestClient(app)
+
+    response = client.get(url="/v1/ocr/123545")
+
+    output = response.json()
+    assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+    assert output["error_code"] == "APIError"
+    assert output["detail"] == "Unknown error"
+
+
+def test_extract_with_llm_error(mocker, signed_url):
     side_effects = [
         openai.APITimeoutError(request=mocker.MagicMock()),
         openai.APIConnectionError(request=mocker.MagicMock()),
