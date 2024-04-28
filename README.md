@@ -24,7 +24,7 @@
 
 - In actual git practice, it is not recommended to store binary or large files to the git as it will make git very slow to pull. However, we store testing files in this repository for simplicity.
 
-- Due to time constraints, not all error handling code are fully tested in automated test
+- Due to time constraints (having issues in the current company), error handling code are not fully tested.
 
 - Signed URL expiration date is fixed to 7 days. It can be changeable as config parameter in the future if need
 
