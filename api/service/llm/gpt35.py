@@ -1,6 +1,8 @@
 import logging
 import openai
 import qdrant_client
+import qdrant_client.http
+import qdrant_client.http.exceptions
 from qdrant_client.http.models import Distance, VectorParams
 from langchain_core.exceptions import LangChainException
 from langchain.text_splitter import RecursiveCharacterTextSplitter
@@ -21,6 +23,7 @@ from api.common.error import (
     LlmOpenAiBadRequestError,
     LlmOpenAiRateLimitError,
     LlmOpenAiServiceError,
+    LlmVectorStoreError,
 )
 
 
@@ -144,6 +147,9 @@ class Gpt35LLMService(LLMService):
             raise LlmError(
                 "(LangChain) There is problem with our llm service. Please report the issue to developer"
             ) from err
+
+        except qdrant_client.http.exceptions.ApiException as err:
+            raise LlmVectorStoreError
 
         except Exception as err:
             raise LlmError(

@@ -1,9 +1,8 @@
 import pytest
 import os
 
-
 from vector_db_task import app
-
+from config import app_config
 
 @pytest.fixture(scope="session")
 def celery_config():
@@ -15,6 +14,5 @@ def celery_config():
 
 #
 def pytest_configure():
-    # os.system('curl -s -L -o tektome_files.tar.gz "https://drive.google.com/uc?export=download&id=1lFs8qpOEzXqYP9OB47Cjp0aPx7HkHdtW"')
-    # os.system('mkdir test_files && tar -xzvf tektome_files.tar.gz -C test_files/')
-    pass
+    # set debug to false
+    app_config.debug = False

@@ -1,4 +1,5 @@
 import os
+import traceback
 from urllib.parse import unquote, urlparse
 
 ALLOWED_FILE_FORMAT = ["image/tiff", "image/jpeg", "image/png", "application/pdf"]
@@ -35,3 +36,14 @@ def get_filename_from_signed_url(signed_url: str) -> str:
     unquoted_url = unquote(signed_url)
     parsed_url = urlparse(unquoted_url)
     return os.path.basename(parsed_url.path)
+
+
+def get_traceback_str(exc: Exception, debug=False) -> str:
+    if debug:
+        traceback_str = "".join(
+            traceback.format_exception(exc, value=exc, tb=exc.__traceback__)
+        )
+
+        return f"{str(exc)}: {traceback_str}"
+
+    return str(exc)

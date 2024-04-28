@@ -84,6 +84,8 @@ async def upload(files: list[UploadFile]) -> UploadListResponse:
     except ObjectStorageError as err:
         logger.exception("There is a problem with object storage while uploading")
         raise
+    except Exception as err:
+        raise APIError("Unknown error") from err
 
     return UploadListResponse(upload_results=upload_results)
 
@@ -133,6 +135,13 @@ async def mock_ocr(request: OcrRequest, response: Response) -> OcrResponse:
         logger.exception("Found eror related to celery while processing ocr request")
         raise APIError("There is problem with backend side (celery)") from err
 
+    except ObjectStorageFileNotFoundError as err:
+        logger.exception("The requested file is not sample files!")
+        raise
+
+    except Exception as err:
+        raise APIError("Unknown error") from err
+
 
 @router.get("/ocr/{task_id}")
 async def get_ocr_status(task_id: str) -> OcrResponse:
@@ -154,6 +163,8 @@ async def get_ocr_status(task_id: str) -> OcrResponse:
     except CeleryError as err:
         logger.exception("Found eror related to celery while checking task status")
         raise APIError("There is problem with backend side (celery)") from err
+    except Exception as err:
+        raise APIError("Unknown error") from err
 
 
 @router.post("/extract")

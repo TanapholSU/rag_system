@@ -10,8 +10,16 @@ from api.common.error import (
     APIError,
 )
 from api.routers.tektome import router
+from api.common.utils import get_traceback_str
+from config import app_config
 
-logging.basicConfig(filename="app.log", encoding="utf-8", level=logging.DEBUG)
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    handlers=[logging.FileHandler("app.log"), logging.StreamHandler()],
+)
+
 logger = logging.getLogger(__name__)
 
 app = FastAPI()
@@ -21,9 +29,13 @@ app = FastAPI()
 async def unsupported_file_type_error_handler(
     request: Request, exc: UnsupportedFileTypeError
 ):
+
     return JSONResponse(
         status_code=400,
-        content=dict(error_code=exc.__class__.__name__, detail=str(exc)),
+        content=dict(
+            error_code=exc.__class__.__name__,
+            detail=get_traceback_str(exc, debug=app_config.debug),
+        ),
     )
 
 
@@ -34,7 +46,10 @@ async def file_not_found_error_handler(
 
     return JSONResponse(
         status_code=400,
-        content=dict(error_code=exc.__class__.__name__, detail=str(exc)),
+        content=dict(
+            error_code=exc.__class__.__name__,
+            detail=get_traceback_str(exc, debug=app_config.debug),
+        ),
     )
 
 
@@ -43,7 +58,10 @@ async def object_storage_error_handler(request: Request, exc: ObjectStorageError
 
     return JSONResponse(
         status_code=500,
-        content=dict(error_code=exc.__class__.__name__, detail=str(exc)),
+        content=dict(
+            error_code=exc.__class__.__name__,
+            detail=get_traceback_str(exc, debug=app_config.debug),
+        ),
     )
 
 
@@ -51,7 +69,10 @@ async def object_storage_error_handler(request: Request, exc: ObjectStorageError
 async def llm_error_handler(request: Request, exc: LlmError):
     return JSONResponse(
         status_code=500,
-        content=dict(error_code=exc.__class__.__name__, detail=str(exc)),
+        content=dict(
+            error_code=exc.__class__.__name__,
+            detail=get_traceback_str(exc, debug=app_config.debug),
+        ),
     )
 
 
@@ -59,7 +80,10 @@ async def llm_error_handler(request: Request, exc: LlmError):
 async def api_error_handler(request: Request, exc: APIError):
     return JSONResponse(
         status_code=500,
-        content=dict(error_code=exc.__class__.__name__, detail=str(exc)),
+        content=dict(
+            error_code=exc.__class__.__name__,
+            detail=get_traceback_str(exc, debug=app_config.debug),
+        ),
     )
 
 

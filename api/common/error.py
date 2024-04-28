@@ -27,6 +27,18 @@ class LlmError(APIError):
         super().__init__(message)
 
 
+class LlmVectorStoreError(LlmError):
+    """
+    Wrapper for error from vector db
+    """
+
+    def __init__(self, message: str = None) -> None:
+        if message is None:
+            message = "There is some problem with vector db."
+
+        super().__init__(message)
+
+
 # Error classes that wraps around OpenAI API error
 class LlmOpenAiBadRequestError(LlmError):
     """
@@ -75,7 +87,7 @@ class LlmOpenAiServiceError(LlmError):
     """
 
     def __init__(self) -> None:
-        message = "There is problem at Open AI service side. Please contact developer to report the issue."
+        message = "There is problem at Open AI service. Please contact developer to report the issue."
         super().__init__(message)
 
 

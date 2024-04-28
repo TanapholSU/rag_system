@@ -27,11 +27,62 @@
 
 - Signed URL expiration date is fixed to 7 days. It can be changeable as config parameter in the future if need
 
+# Config file
+
+All configuration related to the API should be defined in ENVIRONMENT or `.env` file
+
+```
+# OpenAI API KEY
+OPENAI_API_KEY=<openai api key>
+
+# Vector database url
+LLM_VECTOR_DB_URL=http://qdrant:6333
+
+# Vector database collection name
+LLM_VECTOR_DB_COLLECTION_NAME=tektome
+
+# During LLM process, the large document is splitted for vector embedding and query process.
+# This parameter specifies the chunk size of the splitted text
+LLM_PREPROCESS_CHUNK_SIZE=128
+
+# Specified the chunk overlap parameter during document splitting
+LLM_PREPROCESS_CHUNK_OVERLAP=20
+
+# Maximum mumber of relevant documents to be retrieved from vector db
+LLM_VECTOR_SEARCH_TOP_K=1
+
+# Service endpoint of object storage. No need to include http://
+STORAGE_SERVICE_ENDPOINT=minio:9000
+
+# access key for the object storage
+STORAGE_ACCESS_KEY=tektome
+
+# secret key for accessing the object storage
+STORAGE_SECRET_KEY=tektomeSecret
+
+# target bucket name
+STORAGE_BUCKET_NAME=tektome
+
+# type of connection to object storage
+STORAGE_SECURE_CONNECTION=False
+
+# Celery is used to process long running ocr task.
+# This parameter is for celery broker url (message communication)
+CELERY_BROKER_URL=redis://redis:6379/0
+
+# Celery result backend url (for storing result and state of the task)
+CELERY_RESULT_BACKEND_URL=redis://redis:6379/0
+
+# DEBUG mode. Default value is  False. If it's True, it outputs stacktrace in every error response obtained from API 
+DEBUG=False
+```
+
+
 # Test & Deployment (locally)
 
 Normally, if you want to run the test or deploy everything locally. Please follow these steps:
 
-1. Rename `.env.default` to `.env` and configure `OPENAI_API_KEY` parameter. 
+1. Rename `.env.default` to `.env` and just configure `OPENAI_API_KEY` parameter. 
 Other parameters is configured for running locally so you don't need configure those.
 
 2. To run the test locally, simply run `docker compose -f docker-compose-local.yml run tektome-test --build`. 
@@ -75,7 +126,6 @@ If file is too large, UploadFile method may not be suitable choice as there is o
 Please send the request using multipart/form upload
 
 ### Json Response payload
-
 
 You should get the UploadListResponse object with HTTP status 200.
 The UploadListResponse includes list of UploadResponse objects each of which contains signed-URL of the uploaded file.
@@ -141,7 +191,7 @@ The json response is also OcrResponse object with HTTP status 200
 ## /v1/extract (method: POST)
 
 Requirements are:
-- input is query text and file_id  (signed URL) as an input
+- input is query text and signed URL as input
 - perform vector search using query text on the document in vector stored extracted from the file with signed_url
 - use chat completion (chatprompt) to generate the answer 
 

@@ -46,5 +46,8 @@ class AppSettings(BaseSettings):
     # Celery result backend url (for storing result and state of the task)
     celery_result_backend_url: str = Field(default="redis://localhost:6379/0")
 
+    # debug mode (will include traceback in the response)
+    debug: bool = Field(default=False)
+
 
 app_config = AppSettings()
