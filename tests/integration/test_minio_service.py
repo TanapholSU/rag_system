@@ -79,7 +79,6 @@ def test_delete_file():
         url = urlparse(signed_url)
         stored_filename = os.path.basename(url.path)
 
-        # if it does not exist, it will raise error here
         assert object_storage.contains_file(stored_filename) == True
 
         object_storage.delete(stored_filename)

@@ -63,8 +63,6 @@ def test_ocr_endpoint_with_invalid_data():
     Testing ocr endpoint when providing non-existing file.
     Initially, the http status response from this endpoint should be 400.
     """
-    # upload files first
-
     response = client.post(
         url="/v1/ocr", json={"signed_url": "http://localhost/test_invalid_file.jpg"}
     )

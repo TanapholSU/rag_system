@@ -164,7 +164,7 @@ def test_upload_multiple_files():
     assert upload_list_data.upload_results[4].filename == "tektome.tif"
 
     url = upload_list_data.upload_results[0].signed_url
-    # check md5 of the uploaded file
+    # check md5 of each uploaded file
     result = requests.head(url)
     md5 = result.headers["ETAG"]
     assert sample_files_md5["建築基準法施行令.pdf"] == clean_quote_from_etag(md5)

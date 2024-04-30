@@ -74,7 +74,6 @@ def test_import_multiple_docs():
     docs, _ = llm.qdrant_client.scroll("tektome", limit=total_docs)
 
     for d in docs:
-
         if d.id in documents1_ids_list:
             assert d.payload["metadata"]["source"] == "file1"
             continue

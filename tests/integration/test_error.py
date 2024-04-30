@@ -8,6 +8,7 @@ from fastapi import status
 from celery.exceptions import CeleryError
 import qdrant_client.http
 import qdrant_client.http.exceptions
+
 from main import app
 from config import app_config
 from vector_db_task import import_doc_to_vector_store
@@ -43,6 +44,11 @@ def signed_url():
 
 
 def test_upload_with_object_storage_error(mocker):
+    """
+    Test upload endpoint when the called MinioStorage.upload() function is patched to raise ObjectStorageError.
+    The returned response from API should be correct json with HTTP status 500
+    """
+
     # patch function called in query() to trigger error handling code
     mocker.patch(
         "api.service.storage.minio_storage.MinioStorage.upload",
@@ -66,6 +72,12 @@ def test_upload_with_object_storage_error(mocker):
 
 
 def test_upload_with_unexpected_error(mocker):
+    """
+    Test upload endpoint when the called MinioStorage.upload() function is patched.
+    So, API should handle an error we don't specifically handle.
+    The returned error code should be APIerror with HTTP status 500.
+    """
+
     # patch function called in query() to trigger error handling code
     mocker.patch(
         "api.service.storage.minio_storage.MinioStorage.upload",
@@ -89,6 +101,12 @@ def test_upload_with_unexpected_error(mocker):
 
 
 def test_mock_ocr_with_unexpected_error(mocker):
+    """
+    Test OCR endpoint when the called import_doc_to_vector_store.delay function is patched.
+    Thus, the endpoint should catch the error we don't specifically handle.
+    The API should wrap the raised error to APIerror and returns it as json with with HTTP status 500.
+    """
+
     # patch function called in query() to trigger error handling code
     mocker.patch(
         "vector_db_task.import_doc_to_vector_store.delay",
@@ -108,6 +126,11 @@ def test_mock_ocr_with_unexpected_error(mocker):
 
 
 def test_mock_ocr_with_celery_error(mocker):
+    """
+    Test OCR endpoint when the called import_doc_to_vector_store.delay function is patched to raise Celery error.
+    The API should wrap the error to APIerror and returns it as json with with HTTP status 500.
+    """
+
     # patch function called in query() to trigger error handling code
     mocker.patch(
         "vector_db_task.import_doc_to_vector_store.delay", side_effect=CeleryError()
@@ -126,6 +149,12 @@ def test_mock_ocr_with_celery_error(mocker):
 
 
 def test_get_ocr_status_with_celery_error(mocker):
+    """
+    Test OCR status endpoint.
+    The called import_doc_to_vector_store.AsyncResult() is patched to raise Celery error.
+    The API should wrap the error to APIerror and returns it as json with with HTTP status 500.
+    """
+
     # patch function called in query() to trigger error handling code
     mocker.patch(
         "vector_db_task.import_doc_to_vector_store.AsyncResult",
@@ -143,6 +172,12 @@ def test_get_ocr_status_with_celery_error(mocker):
 
 
 def test_get_ocr_status_with_unexpected_error(mocker):
+    """
+    Test OCR status endpoint.
+    The called import_doc_to_vector_store.AsyncResult() is patched to raise an unexpected error.
+    The API should wrap the error to APIerror and returns it as json with with HTTP status 500.
+    """
+
     # patch function called in query() to trigger error handling code
     mocker.patch(
         "vector_db_task.import_doc_to_vector_store.AsyncResult",
@@ -160,6 +195,12 @@ def test_get_ocr_status_with_unexpected_error(mocker):
 
 
 def test_extract_with_llm_error(mocker, signed_url):
+    """
+    Test LLM endpoint with OpenAI, LangChain, and unexpected errors.
+    The function used in LLM service is patched to raise those errors.
+    The API should wrap the error to appropriate custom error and returns it as json with with HTTP status 500.
+    """
+
     side_effects = [
         openai.APITimeoutError(request=mocker.MagicMock()),
         openai.APIConnectionError(request=mocker.MagicMock()),
@@ -200,7 +241,7 @@ def test_extract_with_llm_error(mocker, signed_url):
         LlmVectorStoreError,
     ]
 
-    # patch function called in query() to trigger error handling code
+    # patch function called in Gpt35LLMService.query() to trigger error handling code
     mocker.patch(
         "api.service.llm.gpt35.Gpt35LLMService._retrieve_docs", side_effect=side_effects
     )
