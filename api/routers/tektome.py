@@ -77,7 +77,9 @@ async def upload(files: list[UploadFile]) -> UploadListResponse:
     upload_results = []
     try:
         for file in files:
-            file_id = await run_in_threadpool(object_storage_service.upload, file.filename, file.file, file.size)
+            file_id = await run_in_threadpool(
+                object_storage_service.upload, file.filename, file.file, file.size
+            )
             # file_id = object_storage_service.upload(file.filename, file.file, file.size)
             result = UploadResponse(filename=file.filename, signed_url=file_id)
             upload_results.append(result)
@@ -196,7 +198,6 @@ async def extract(request: ExtractRequest) -> ExtractResponse:
 
         if not object_storage_service.contains_file(filename):
             raise ObjectStorageFileNotFoundError
-
 
         result = await run_in_threadpool(llm_service.query, query, signed_url)
         # result = llm_service.query(query, signed_url)
