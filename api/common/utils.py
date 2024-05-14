@@ -1,6 +1,7 @@
 import os
 import traceback
 from urllib.parse import unquote, urlparse
+from api.common.error import ObjectStorageFileNotFoundError
 
 ALLOWED_FILE_FORMAT = ["image/tiff", "image/jpeg", "image/png", "application/pdf"]
 
@@ -35,6 +36,11 @@ def get_filename_from_signed_url(signed_url: str) -> str:
     """
     unquoted_url = unquote(signed_url)
     parsed_url = urlparse(unquoted_url)
+    output = os.path.basename(parsed_url.path)
+
+    if output is None or output.strip() == "":
+        raise ObjectStorageFileNotFoundError
+
     return os.path.basename(parsed_url.path)
 
 

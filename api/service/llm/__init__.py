@@ -91,9 +91,9 @@ class LLMService(ABC):
         pass
 
     @abstractmethod
-    def _retrieve_docs(self, query: str, filename: str, top_k=1) -> List[Document]:
+    def _get_retriever(self, filename: str, top_k=1) -> List[Document]:
         """
-        Private function to get relevant documents from vector db
+        Private function to get vector db retriever with filename filtering
 
         Args:
             - query_string: input query
@@ -101,6 +101,6 @@ class LLMService(ABC):
             - top_k (optional): the number of the top-k most relevant documents to be retrieved
 
         Returns:
-            - list of documents related to query and the target file
+            - retriever for the target file
         """
         pass
