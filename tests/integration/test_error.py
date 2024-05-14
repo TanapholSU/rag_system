@@ -243,7 +243,7 @@ def test_extract_with_llm_error(mocker, signed_url):
 
     # patch function called in Gpt35LLMService.query() to trigger error handling code
     mocker.patch(
-        "api.service.llm.gpt35.Gpt35LLMService._retrieve_docs", side_effect=side_effects
+        "api.service.llm.gpt35.Gpt35LLMService._get_retriever", side_effect=side_effects
     )
 
     for error in exepected_error_codes:

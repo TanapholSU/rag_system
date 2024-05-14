@@ -21,7 +21,22 @@ def test_load_ocr_json_result():
     # import json document
     docs = load_ocr_json_result(
         os.path.join("test_files", "ocr", "東京都建築安全条例.json"),
-        source_name="東京都建築安全条例.pdf",
+        source_name="file1",
     )
 
     assert len(docs) == 1
+    assert docs[0].metadata["source"] == "file1"
+
+
+def test_load_ocr_json_result_without_sourcename():
+    """
+    Test json parser function.
+    The number of loaded documents obtained from the function should be one.
+    """
+    # import json document
+    docs = load_ocr_json_result(
+        os.path.join("test_files", "ocr", "東京都建築安全条例.json"),
+    )
+
+    assert len(docs) == 1
+    assert docs[0].metadata["source"] == "東京都建築安全条例.json"
