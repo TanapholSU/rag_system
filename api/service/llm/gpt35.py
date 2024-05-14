@@ -173,9 +173,7 @@ class Gpt35LLMService(LLMService):
 
     def _get_retriever(self, filename: str) -> List[Document]:
         retriever: VectorStoreRetriever = self.vector_store.as_retriever(
-            search_kwargs=dict(
-                k=self.vector_search_top_k, filter=dict(source=filename)
-            )
+            search_kwargs=dict(k=self.vector_search_top_k, filter=dict(source=filename))
         )
 
         return retriever
