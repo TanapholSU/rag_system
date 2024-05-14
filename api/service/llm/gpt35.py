@@ -10,6 +10,7 @@ from langchain_openai import OpenAIEmbeddings
 from langchain_core.vectorstores import VectorStoreRetriever
 from langchain.vectorstores.qdrant import Qdrant
 from langchain_core.documents import Document
+from langchain_core.runnables import RunnablePassthrough
 from langchain_openai import ChatOpenAI
 from langchain.prompts import ChatPromptTemplate
 from langchain_core.output_parsers.string import StrOutputParser
@@ -111,8 +112,7 @@ class Gpt35LLMService(LLMService):
 
     def query(self, query: str, filename: str) -> str:
         try:
-            hit_results = self._retrieve_docs(query, filename)
-            logger.debug(f"Got {len(hit_results)} context results from vector db")
+            retriever: VectorStoreRetriever = self._get_retriever(filename)
 
             template = """Answer the question based only on the following context:
                 {context}
@@ -121,10 +121,15 @@ class Gpt35LLMService(LLMService):
 
             prompt = ChatPromptTemplate.from_template(template)
             llm = ChatOpenAI(model_name="gpt-3.5-turbo", api_key=self.key)
-            chain = prompt | llm | StrOutputParser()
 
-            return chain.invoke({"question": query, "context": hit_results})
+            chain = (
+                {"question": RunnablePassthrough(), "context": retriever}
+                | prompt
+                | llm
+                | StrOutputParser()
+            )
 
+            return chain.invoke(query)
         except openai.APIConnectionError as err:
             raise LlmOpenAiAPIConnectionError from err
 
@@ -166,9 +171,9 @@ class Gpt35LLMService(LLMService):
 
         return text_splitter.split_documents(docs)
 
-    def _retrieve_docs(self, query: str, filename: str) -> List[Document]:
+    def _get_retriever(self, filename: str) -> List[Document]:
         retriever: VectorStoreRetriever = self.vector_store.as_retriever(
-            search_kwargs=dict(k=self.vector_search_top_k, filter=dict(source=filename))
+            search_kwargs=dict(k=self.vector_search_top_k, filter=dict(source="filename"))
         )
 
-        return retriever.get_relevant_documents(query)
+        return retriever
