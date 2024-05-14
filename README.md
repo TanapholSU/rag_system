@@ -145,6 +145,8 @@ The UploadListResponse includes list of UploadResponse objects each of which con
 | signed_url    | str                 | signed URL to the uploaded file 
 
 
+In case of error, you should get error json with Http status either 400 or 500.
+
 ---
 
 ## /v1/ocr (method: POST)
@@ -180,6 +182,8 @@ Otherwise, you would get  ObjectStorageFileNotFoundError error with Http statuc 
 | task_status | str                 | status of task (e.g., SUCCESS, FAILURE, PENDING)
 | detail    | str or None              | error detail if there is
 
+In case of error, you should get error json with Http status either 400 or 500.
+
 ---
 
 ## /v1/ocr/<task_id> (method: GET)
@@ -187,6 +191,8 @@ Otherwise, you would get  ObjectStorageFileNotFoundError error with Http statuc 
 This additional endpoint allows user to query the OCR task status from the task id obtained from UploadResponse object.
 
 The json response is also OcrResponse object with HTTP status 200
+In case of error, you should get error json with Http status 500 (for now).
+
 
 ---
 
